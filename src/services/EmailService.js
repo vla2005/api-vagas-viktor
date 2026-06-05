@@ -9,7 +9,9 @@ const SMTP_PASS = process.env.SMTP_PASS || ''; // Senha do email
 const EMAIL_FROM = process.env.EMAIL_FROM || ''; // Opcional: se vazio, usa SMTP_USER como remetente
 const EMAIL_TO = process.env.EMAIL_TO || ''; // Exemplo: seuemail@gmail.com
 const SENT_JOBS_FILE = path.resolve(__dirname, '../../.data/sent-jobs.json');
+const ANALYZED_JOBS_FILE = path.resolve(__dirname, '../../.data/analyzed-jobs.json');
 const SENT_JOBS_TTL = 7 * 24 * 60 * 60 * 1000; // 7 dias
+const ANALYZED_JOBS_TTL = 3 * 24 * 60 * 60 * 1000; // 3 dias
 
 function isConfigured() {
   return SMTP_HOST && SMTP_USER && SMTP_PASS && EMAIL_TO;
@@ -131,6 +133,66 @@ function hasJobBeenSent(level, job) {
   return getAlternativeJobKeys(level, job).some((key) => sentJobs[key]);
 }
 
+function readAnalyzedJobs() {
+  try {
+    if (!fs.existsSync(ANALYZED_JOBS_FILE)) {
+      return {};
+    }
+
+    return JSON.parse(fs.readFileSync(ANALYZED_JOBS_FILE, 'utf8'));
+  } catch (error) {
+    return {};
+  }
+}
+
+function saveAnalyzedJobs(analyzedJobs) {
+  fs.mkdirSync(path.dirname(ANALYZED_JOBS_FILE), { recursive: true });
+  fs.writeFileSync(ANALYZED_JOBS_FILE, JSON.stringify(analyzedJobs, null, 2));
+}
+
+function removeExpiredAnalyzedJobs(analyzedJobs) {
+  const now = Date.now();
+  const activeJobs = {};
+
+  Object.entries(analyzedJobs).forEach(([key, value]) => {
+    const analyzedAt = value && value.analyzed_at ? new Date(value.analyzed_at).getTime() : 0;
+
+    if (analyzedAt && now - analyzedAt <= ANALYZED_JOBS_TTL) {
+      activeJobs[key] = value;
+    }
+  });
+
+  return activeJobs;
+}
+
+function getAnalyzedJob(level, job) {
+  const analyzedJobs = removeExpiredAnalyzedJobs(readAnalyzedJobs());
+  saveAnalyzedJobs(analyzedJobs);
+
+  const keys = getAlternativeJobKeys(level, job);
+  const key = keys.find((item) => analyzedJobs[item]);
+
+  return key ? analyzedJobs[key] : null;
+}
+
+function markJobAnalyzed(level, job, analysis) {
+  const analyzedJobs = removeExpiredAnalyzedJobs(readAnalyzedJobs());
+  const now = new Date().toISOString();
+  const keys = getAlternativeJobKeys(level, job);
+
+  keys.forEach((key) => {
+    analyzedJobs[key] = {
+      analyzed_at: now,
+      adequada: Boolean(analysis && analysis.adequada),
+      pontuacao_adequacao: Number((analysis && analysis.pontuacao_adequacao) || 0),
+      titulo_vaga: job.titulo_vaga,
+      link_vaga: job.link_vaga,
+    };
+  });
+
+  saveAnalyzedJobs(analyzedJobs);
+}
+
 function getSuccessfulJobs(results) {
   return Object.entries(results)
     .filter(([, result]) => result.ok && result.data)
@@ -176,6 +238,8 @@ function removeExpiredSentJobs(sentJobs) {
 
 module.exports = {
   hasJobBeenSent,
+  getAnalyzedJob,
+  markJobAnalyzed,
 
   async sendJobResults(results) {
     if (!isConfigured()) {

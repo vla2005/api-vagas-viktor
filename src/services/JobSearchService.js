@@ -2,7 +2,7 @@ const MeuPadrinhoService = require('./MeuPadrinhoService');
 const GeminiService = require('./GeminiService');
 const EmailService = require('./EmailService');
 
-const CRON_LEVELS = ['junior', 'pleno'];
+const CRON_LEVELS = ['estagio','junior', 'pleno'];
 const cache = {};
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
 const MAX_AI_ANALYSES_PER_LEVEL = 3;
@@ -233,6 +233,7 @@ function createSearchStats(level) {
     skipped_location: 0,
     skipped_tech_prefilter: 0,
     skipped_already_sent: 0,
+    skipped_already_analyzed: 0,
     ai_analyses_started: 0,
     ai_rejected: 0,
     ai_low_score: 0,
@@ -308,6 +309,12 @@ async function getLatestByLevel(level, options = {}) {
       continue;
     }
 
+    const previousAnalysis = EmailService.getAnalyzedJob(level, candidateResponse);
+    if (previousAnalysis && !previousAnalysis.adequada) {
+      stats.skipped_already_analyzed += 1;
+      continue;
+    }
+
     if (aiAnalyses >= MAX_AI_ANALYSES_PER_LEVEL) {
       stats.max_ai_analyses_reached = true;
       break;
@@ -317,6 +324,7 @@ async function getLatestByLevel(level, options = {}) {
     stats.ai_analyses_started += 1;
     try {
       candidateResponse.analise_ia = await GeminiService.analyzeJob(candidateResponse);
+      EmailService.markJobAnalyzed(level, candidateResponse, candidateResponse.analise_ia);
     } catch (error) {
       if (!error.isTemporary) {
         throw error;

@@ -7,6 +7,7 @@ const cache = {};
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
 const MAX_AI_ANALYSES_PER_LEVEL = 3;
 const CRON_LEVEL_DELAY = 30 * 1000; // 30 segundos
+const MINIMUM_AI_SCORE = 75;
 
 const normalize = (str) => String(str || '').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
@@ -347,7 +348,7 @@ async function getLatestByLevel(level, options = {}) {
       continue;
     }
 
-    if (Number(candidateResponse.analise_ia.pontuacao_adequacao || 0) < 70) {
+    if (Number(candidateResponse.analise_ia.pontuacao_adequacao || 0) < MINIMUM_AI_SCORE) {
       candidateResponse.analise_ia.adequada = false;
       stats.ai_low_score += 1;
       continue;

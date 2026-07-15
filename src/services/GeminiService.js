@@ -73,6 +73,7 @@ PROJETOS PESSOAIS E ACADEMICOS
 - Automatizacao da busca, filtragem e avaliacao de oportunidades compativeis com o perfil.
 - Notificacoes por e-mail com avaliacao de compatibilidade, curriculo otimizado em anexo e link para candidatura.
 - Deploy em AWS EC2, aplicacao Node.js gerenciada por PM2, proxy reverso com Nginx e execucao recorrente por cron jobs.
+- Pipeline de CI/CD com GitHub Actions, autenticação federada via OIDC e deploy automatizado por AWS Systems Manager.
 
 3. Automacao de Ofertas com Shopee Afiliados e Telegram | junho/2026
 - Java, Spring Boot, Maven, Docker e arquitetura em camadas.

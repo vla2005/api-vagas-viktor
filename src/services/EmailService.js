@@ -22,7 +22,7 @@ function getNodemailer() {
   try {
     return require('nodemailer');
   } catch (error) {
-    const missingDependency = new Error('Instale a dependencia nodemailer com npm install no cPanel.');
+    const missingDependency = new Error('Instale a dependência nodemailer com npm install no cPanel.');
     missingDependency.statusCode = 500;
     throw missingDependency;
   }
@@ -32,7 +32,7 @@ function getPdfKit() {
   try {
     return require('pdfkit');
   } catch (error) {
-    const missingDependency = new Error('Instale a dependencia pdfkit com npm install no cPanel.');
+    const missingDependency = new Error('Instale a dependência pdfkit com npm install no cPanel.');
     missingDependency.statusCode = 500;
     throw missingDependency;
   }
@@ -44,14 +44,14 @@ function buildJobText(level, job) {
   return `
 Nova vaga ${level}
 
-Titulo: ${job.titulo_vaga || ''}
+Título: ${job.titulo_vaga || ''}
 Empresa: ${job.nome_empresa || ''}
 Local: ${job.local || ''}
 Modelo: ${job.forma_trabalho || ''}
-Nivel: ${job.nivel || job.nivel_vaga || ''}
+Nível: ${job.nivel || job.nivel_vaga || ''}
 Link: ${job.link_vaga || ''}
 
-Descricao:
+Descrição:
 ${job.descricao_vaga || ''}
 
 Requisitos:
@@ -66,13 +66,13 @@ ${analysis.resumo || ''}
 Motivo:
 ${analysis.motivo || ''}
 
-Sugestao de preparacao:
+Sugestão de preparação:
 ${analysis.sugestao_preparacao || ''}
 
 Pontos fortes:
 ${(analysis.pontos_fortes || []).join('\n')}
 
-Pontos de atencao:
+Pontos de atenção:
 ${(analysis.pontos_atencao || []).join('\n')}
 `;
 }
@@ -87,7 +87,7 @@ function escapeHtml(value) {
 }
 
 function formatEmailText(value) {
-  const text = escapeHtml(value || 'Nao informado.');
+  const text = escapeHtml(value || 'Não informado.');
 
   return text
     .replace(/\r\n/g, '\n')
@@ -102,7 +102,7 @@ function buildList(items) {
   if (listItems.length === 0) {
     return `
       <p style="margin:0;color:#6b7280;font-size:12px;line-height:1.35;">
-        Nao informado.
+        Não informado.
       </p>
     `;
   }
@@ -126,7 +126,7 @@ function buildTagList(items) {
   if (tags.length === 0) {
     return `
       <span style="color:#6b7280;font-size:12px;">
-        Nao informado
+        Não informado
       </span>
     `;
   }
@@ -169,7 +169,7 @@ function buildMetaItem(label, value) {
         ${escapeHtml(label)}
       </div>
       <div style="color:#111827;font-size:12px;line-height:1.25;font-weight:700;">
-        ${escapeHtml(value || 'Nao informado')}
+        ${escapeHtml(value || 'Não informado')}
       </div>
     </td>
   `;
@@ -208,7 +208,7 @@ function buildJobHtml(level, job) {
               </h1>
 
               <p style="margin:4px 0 0 0;color:#4b5563;font-size:13px;line-height:1.25;">
-                ${escapeHtml(job.nome_empresa || 'Empresa nao informada')}
+                ${escapeHtml(job.nome_empresa || 'Empresa não informada')}
               </p>
             </td>
 
@@ -230,12 +230,12 @@ function buildJobHtml(level, job) {
           <tr>
             ${buildMetaItem('Local', job.local)}
             ${buildMetaItem('Modelo', job.forma_trabalho)}
-            ${buildMetaItem('Nivel', job.nivel || job.nivel_vaga)}
+            ${buildMetaItem('Nível', job.nivel || job.nivel_vaga)}
           </tr>
         </table>
 
         <div style="padding:10px 0 8px 0;border-top:1px solid #f3f4f6;border-bottom:1px solid #f3f4f6;margin-bottom:10px;">
-          ${buildTextSection('Descricao da vaga', job.descricao_vaga)}
+          ${buildTextSection('Descrição da vaga', job.descricao_vaga)}
           ${buildTextSection('Requisitos', job.requisitos_tecnicos)}
 
           <div style="margin:0;">
@@ -259,7 +259,7 @@ function buildJobHtml(level, job) {
 
             <td style="width:50%;vertical-align:top;padding:0 0 0 7px;">
               <h2 style="margin:0 0 4px 0;color:#111827;font-size:13px;line-height:1.2;">
-                Preparacao
+                Preparação
               </h2>
               <p style="margin:0;color:#374151;font-size:12px;line-height:1.4;">
                 ${formatEmailText(analysis.sugestao_preparacao)}
@@ -291,7 +291,7 @@ function buildJobHtml(level, job) {
             <td style="width:50%;vertical-align:top;padding:0 0 0 7px;">
               <div style="padding:8px 10px;border:1px solid #e5e7eb;border-radius:8px;">
                 <h2 style="margin:0 0 5px 0;color:#111827;font-size:13px;line-height:1.2;">
-                  Pontos de atencao
+                  Pontos de atenção
                 </h2>
                 ${buildList(analysis.pontos_atencao)}
               </div>
@@ -326,7 +326,7 @@ function buildEmailFromJobs(jobs, fallbackResults) {
       <div style="margin:0;padding:12px;background:#f6f7f9;">
         ${jobs.map(({ level, job }) => buildJobHtml(level, job)).join('')}
         <p style="max-width:720px;margin:0 auto;color:#9ca3af;font-family:Arial,Helvetica,sans-serif;font-size:10px;text-align:center;line-height:1.3;">
-          Email gerado automaticamente pela automacao de vagas.
+          E-mail gerado automaticamente pela automação de vagas.
         </p>
       </div>
     `,
@@ -737,32 +737,32 @@ const CLEAN_RESUME_PAGE = {
 
 const CLEAN_EXPERIENCES = [
   {
-    title: 'SERVICO FEDERAL DE PROCESSAMENTO DE DADOS - SERPRO | Brasilia - DF',
-    role: 'Engenheiro de Software Junior | Abril 2024 -- Abril 2026',
+    title: 'SERVIÇO FEDERAL DE PROCESSAMENTO DE DADOS - SERPRO | Brasília - DF',
+    role: 'Engenheiro de Software Júnior | Abril 2024 -- Abril 2026',
     items: [
-      'Desenvolvimento e manutencao de APIs REST com Java (Spring Boot) e PHP (Laravel).',
-      'Desenvolvimento e manutencao de interfaces com React e Vue.js.',
-      'Manutencao de banco de dados relacional e melhoria do fluxo de entrega.',
-      'Realizacao de testes com JUnit, PHPUnit e analise de requisitos.',
+      'Desenvolvimento e manutenção de APIs REST com Java (Spring Boot) e PHP (Laravel).',
+      'Desenvolvimento e manutenção de interfaces com React e Vue.js.',
+      'Manutenção de banco de dados relacional e melhoria do fluxo de entrega.',
+      'Realização de testes com JUnit, PHPUnit e análise de requisitos.',
     ],
   },
   {
-    title: 'Freelance - Landing Page Disk Baterias DF | Brasilia, DF - Mai 2026',
+    title: 'Freelance - Landing Page Disk Baterias DF | Brasília, DF - Mai 2026',
     items: [
       'Desenvolvimento com React e Tailwind CSS | layout mobile-first.',
       'https://diskbaterias22hs.com',
     ],
   },
   {
-    title: 'Freelance Full Stack - Sistema de Gestao de Oficina Mecanica | Brasilia, DF - Nov 2025',
+    title: 'Freelance Full Stack - Sistema de Gestão de Oficina Mecânica | Brasília, DF - Nov 2025',
     items: [
       'Desenvolvimento full stack com Laravel, Vue.js e Tailwind CSS.',
-      'Gestao de clientes, servicos, controle financeiro e dashboard interativo.',
-      'Autenticacao com Laravel Sanctum | 2FA com Google Authenticator | Filas (Laravel Queues).',
+      'Gestão de clientes, serviços, controle financeiro e dashboard interativo.',
+      'Autenticação com Laravel Sanctum | 2FA com Google Authenticator | Filas (Laravel Queues).',
     ],
   },
   {
-    title: 'Freelance - Landing Page ONG de Adocao de Animais | Brasilia, DF - Ago 2025',
+    title: 'Freelance - Landing Page ONG de Adoção de Animais | Brasília, DF - Ago 2025',
     items: [
       'Desenvolvimento com React e Tailwind CSS | layout mobile-first.',
       'https://www.projetoadotar.site',
@@ -772,27 +772,27 @@ const CLEAN_EXPERIENCES = [
 
 const CLEAN_PROJECTS = [
   {
-    title: 'NutriTreino - Sistema de Gestao Nutricional e Treinos | Mar - Mai 2026',
+    title: 'NutriTreino - Sistema de Gestão Nutricional e Treinos | Mar - Mai 2026',
     items: [
       'Desenvolvimento full stack com Laravel, React.js, Vite e CSS responsivo.',
-      'Gestao de pacientes/alunos, planos alimentares, programas de treino, progresso corporal, fotos de evolucao, check-ins semanais, chat em tempo real, chamada de video com WebRTC e dashboard interativo.',
-      'Integracao com IA Gemini para geracao e ajuste de rascunhos de dietas e treinos com base em objetivos, preferencias, limitacoes e dados fisicos do paciente.',
-      'Autenticacao com Laravel Sanctum; Filas (Queues); Upload de arquivos; Notificacoes por e-mail; Pusher para eventos em tempo real.',
+      'Gestão de pacientes/alunos, planos alimentares, programas de treino, progresso corporal, fotos de evolução, check-ins semanais, chat em tempo real, chamada de vídeo com WebRTC e dashboard interativo.',
+      'Integração com IA Gemini para geração e ajuste de rascunhos de dietas e treinos com base em objetivos, preferências, limitações e dados físicos do paciente.',
+      'Autenticação com Laravel Sanctum; Filas (Queues); Upload de arquivos; Notificações por e-mail; Pusher para eventos em tempo real.',
     ],
   },
   {
-    title: 'Automacao Inteligente de Busca de Vagas | Mai 2026',
+    title: 'Automação Inteligente de Busca de Vagas | Mai 2026',
     items: [
-      'Desenvolvido em Node.js com integracao a IA Gemini.',
-      'Utiliza inteligencia artificial para analisar e comparar os requisitos das vagas com o curriculo do candidato, identificando oportunidades com maior aderencia ao perfil.',
-      'Envia notificacoes por e-mail contendo a avaliacao da compatibilidade e o link direto para candidatura.',
+      'Desenvolvido em Node.js com integração à IA Gemini.',
+      'Utiliza inteligência artificial para analisar e comparar os requisitos das vagas com o currículo do candidato, identificando oportunidades com maior aderência ao perfil.',
+      'Envia notificações por e-mail contendo a avaliação da compatibilidade e o link direto para candidatura.',
     ],
   },
   {
-    title: 'Automacao de Ofertas com Shopee Afiliados e Telegram | Jun 2026',
+    title: 'Automação de Ofertas com Shopee Afiliados e Telegram | Jun 2026',
     items: [
       'Desenvolvido em Java com Spring Boot, Maven, Docker e arquitetura em camadas.',
-      'Integra-se a API GraphQL de Afiliados da Shopee para buscar produtos em promocao periodicamente.',
+      'Integra-se à API GraphQL de Afiliados da Shopee para buscar produtos em promoção periodicamente.',
       'Envia automaticamente ofertas para um grupo do Telegram.',
       'https://t.me/viktorwareofertas',
     ],
@@ -816,7 +816,7 @@ function extractResumeSummary(content) {
   const summary = match ? normalizeResumeText(match[1]) : '';
 
   if (!summary || /Ãƒ|Ã‚|Ã¢/.test(summary)) {
-    return 'Engenheiro de Software full stack com 2 anos de experiencia, com foco em Java, PHP, JavaScript e arquitetura escalavel. Experiencia na construcao de APIs REST aplicando Clean Architecture, Clean Code, otimizacoes e SOLID.';
+    return 'Engenheiro de Software full stack com 2 anos de experiência, com foco em Java, PHP, JavaScript e arquitetura escalável. Experiência na construção de APIs REST aplicando Clean Architecture, Clean Code, otimizações e SOLID.';
   }
 
   return summary;
@@ -900,7 +900,7 @@ function buildResumePdfClean(content) {
     y = text('Viktor Lacerda', left, y, { bold: true, size: 18, align: 'center' }) + 8;
     y = text('Engenheiro de Software', left, y, { size: 10.2, align: 'center' }) + 4;
     y = text(
-      'Brasilia - DF | (61) 92000-1340 | viktorlacerda@gmail.com | linkedin.com/in/viktor-lacerda-148310127 | github.com/vla2005',
+      'Brasília - DF | (61) 92000-1340 | viktorlacerda@gmail.com | linkedin.com/in/viktor-lacerda-148310127 | github.com/vla2005',
       left,
       y,
       { size: 8.25, align: 'center', lineGap: 0 }
@@ -909,22 +909,22 @@ function buildResumePdfClean(content) {
     section('Resumo Profissional');
     paragraph(extractResumeSummary(content));
 
-    section('Competencias');
+    section('Competências');
     skill('Linguagens e Frameworks', 'PHP (Laravel), Java (Spring Boot), JavaScript/TypeScript, Node.js, React, Vue.js');
-    skill('Back-end e APIs', 'REST APIs, integracoes com IA, OpenAPI/Swagger, JWT, Queues, Jobs, WebSocket, Postman');
+    skill('Back-end e APIs', 'REST APIs, integrações com IA, OpenAPI/Swagger, JWT, Queues, Jobs, WebSocket, Postman');
     skill('Infraestrutura e Ferramentas', 'Docker, CI/CD, Git, GitHub, SQL Server, PostgreSQL, MySQL');
     skill('Ferramentas e Metodologias', 'Clean Code, SOLID, Scrum, Kanban');
-    skill('Idiomas', 'Portugues nativo, Ingles C1, Espanhol C2');
+    skill('Idiomas', 'Português nativo, Inglês C1, Espanhol C2');
 
-    section('Experiencia Profissional');
+    section('Experiência Profissional');
     CLEAN_EXPERIENCES.forEach(entry);
 
-    section('Projetos Pessoais / Academicos');
+    section('Projetos Pessoais / Acadêmicos');
     CLEAN_PROJECTS.forEach(entry);
 
-    section('Educacao');
-    y = text('Universidade Catolica de Brasilia - UCB | Brasilia - DF', left, y, { bold: true, size: 8.75 }) + 2;
-    text('Engenharia de Software | Mar 2023 -- Dez 2026 (Previsao)', left, y, { italic: true, size: 8.55 });
+    section('Educação');
+    y = text('Universidade Católica de Brasília - UCB | Brasília - DF', left, y, { bold: true, size: 8.75 }) + 2;
+    text('Engenharia de Software | Mar 2023 -- Dez 2026 (Previsão)', left, y, { italic: true, size: 8.55 });
 
     doc.end();
   });
@@ -1131,7 +1131,7 @@ module.exports = {
     if (successfulJobs.length === 0) {
       return {
         sent: false,
-        reason: 'Nenhuma vaga com boa adequacao foi encontrada.',
+        reason: 'Nenhuma vaga com boa adequação foi encontrada.',
       };
     }
 
@@ -1142,7 +1142,7 @@ module.exports = {
     if (jobsToSend.length === 0) {
       return {
         sent: false,
-        reason: 'A vaga encontrada ja foi enviada anteriormente.',
+        reason: 'A vaga encontrada já foi enviada anteriormente.',
       };
     }
 

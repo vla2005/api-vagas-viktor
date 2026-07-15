@@ -44,12 +44,21 @@ function buildJobText(level, job) {
   return `
 Nova vaga ${level}
 
-TÃƒÆ’Ã‚Â­tulo: ${job.titulo_vaga || ''}
+Titulo: ${job.titulo_vaga || ''}
 Empresa: ${job.nome_empresa || ''}
 Local: ${job.local || ''}
 Modelo: ${job.forma_trabalho || ''}
-NÃƒÆ’Ã‚Â­vel: ${job.nivel || job.nivel_vaga || ''}
+Nivel: ${job.nivel || job.nivel_vaga || ''}
 Link: ${job.link_vaga || ''}
+
+Descricao:
+${job.descricao_vaga || ''}
+
+Requisitos:
+${job.requisitos_tecnicos || ''}
+
+Tecnologias:
+${(job.tecnologias || []).join(', ')}
 
 Resumo da IA:
 ${analysis.resumo || ''}
@@ -57,23 +66,14 @@ ${analysis.resumo || ''}
 Motivo:
 ${analysis.motivo || ''}
 
+Sugestao de preparacao:
+${analysis.sugestao_preparacao || ''}
+
 Pontos fortes:
 ${(analysis.pontos_fortes || []).join('\n')}
 
-Pontos de atenÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o:
+Pontos de atencao:
 ${(analysis.pontos_atencao || []).join('\n')}
-
-SugestÃƒÆ’Ã‚Â£o de preparaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o:
-${analysis.sugestao_preparacao || ''}
-
-Tecnologias:
-${(job.tecnologias || []).join(', ')}
-
-DescriÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o:
-${job.descricao_vaga || ''}
-
-Requisitos:
-${job.requisitos_tecnicos || ''}
 `;
 }
 
@@ -86,16 +86,36 @@ function escapeHtml(value) {
     .replace(/'/g, '&#039;');
 }
 
+function formatEmailText(value) {
+  const text = escapeHtml(value || 'Nao informado.');
+
+  return text
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/\n/g, '<br>');
+}
+
 function buildList(items) {
   const listItems = (items || []).filter(Boolean);
 
   if (listItems.length === 0) {
-    return '<p style="margin:0;color:#6b7280;font-size:10.5px;line-height:1.25;">Não informado.</p>';
+    return `
+      <p style="margin:0;color:#6b7280;font-size:12px;line-height:1.35;">
+        Nao informado.
+      </p>
+    `;
   }
 
   return `
-    <ul style="margin:4px 0 0 0;padding:0 0 0 13px;color:#111827;font-size:10.5px;line-height:1.28;">
-      ${listItems.map((item) => `<li style="margin:2px 0;">${escapeHtml(item)}</li>`).join('')}
+    <ul style="margin:0;padding:0 0 0 16px;color:#374151;font-size:12px;line-height:1.35;">
+      ${listItems
+        .map((item) => `
+          <li style="margin:0 0 4px 0;">
+            ${escapeHtml(item)}
+          </li>
+        `)
+        .join('')}
     </ul>
   `;
 }
@@ -104,34 +124,66 @@ function buildTagList(items) {
   const tags = (items || []).filter(Boolean);
 
   if (tags.length === 0) {
-    return '<span style="color:#6b7280;font-size:10.5px;">Não informado</span>';
+    return `
+      <span style="color:#6b7280;font-size:12px;">
+        Nao informado
+      </span>
+    `;
   }
 
   return tags
     .slice(0, 18)
-    .map((item) => `<span style="display:inline-block;margin:0 3px 4px 0;padding:3px 6px;border-radius:999px;background:#eef2ff;color:#3730a3;font-size:9.5px;line-height:1.1;">${escapeHtml(item)}</span>`)
+    .map((item) => `
+      <span style="display:inline-block;margin:0 4px 5px 0;padding:3px 7px;border:1px solid #d1d5db;border-radius:999px;background:#ffffff;color:#374151;font-size:11px;line-height:1.1;white-space:nowrap;">
+        ${escapeHtml(item)}
+      </span>
+    `)
     .join('');
 }
 
-function buildCompactInfoCell(label, value) {
+function buildScoreBar(score) {
+  const safeScore = Math.max(0, Math.min(100, Number(score || 0)));
+
   return `
-    <td style="width:25%;padding:0 8px 6px 0;vertical-align:top;">
-      <div style="color:#6b7280;font-size:9.5px;line-height:1.15;">${label}</div>
-      <div style="color:#111827;font-size:10.5px;line-height:1.2;font-weight:700;">${escapeHtml(value || 'Não informado')}</div>
+    <div style="margin-top:8px;">
+      <table role="presentation" style="width:100%;border-collapse:collapse;">
+        <tr>
+          <td style="padding:0;width:100%;">
+            <div style="height:6px;background:#e5e7eb;border-radius:999px;overflow:hidden;">
+              <div style="width:${safeScore}%;height:6px;background:#111827;border-radius:999px;"></div>
+            </div>
+          </td>
+          <td style="padding:0 0 0 8px;width:58px;text-align:right;color:#111827;font-size:12px;font-weight:700;white-space:nowrap;">
+            ${safeScore}/100
+          </td>
+        </tr>
+      </table>
+    </div>
+  `;
+}
+
+function buildMetaItem(label, value) {
+  return `
+    <td style="padding:0 8px 6px 0;vertical-align:top;">
+      <div style="color:#6b7280;font-size:10px;line-height:1.15;text-transform:uppercase;letter-spacing:.04em;">
+        ${escapeHtml(label)}
+      </div>
+      <div style="color:#111827;font-size:12px;line-height:1.25;font-weight:700;">
+        ${escapeHtml(value || 'Nao informado')}
+      </div>
     </td>
   `;
 }
 
-function buildCompactPanel(title, body, options = {}) {
-  const background = options.background || '#ffffff';
-  const border = options.border || '#e5e7eb';
-  const titleColor = options.titleColor || '#111827';
-  const textColor = options.textColor || '#374151';
-
+function buildTextSection(title, body) {
   return `
-    <div style="padding:9px 10px;background:${background};border:1px solid ${border};border-radius:7px;margin-bottom:8px;">
-      <h2 style="margin:0 0 4px 0;font-size:12px;line-height:1.2;color:${titleColor};">${title}</h2>
-      <p style="margin:0;color:${textColor};font-size:10.5px;line-height:1.32;">${escapeHtml(body || 'Não informado.')}</p>
+    <div style="margin:0 0 10px 0;">
+      <h2 style="margin:0 0 4px 0;color:#111827;font-size:13px;line-height:1.2;">
+        ${escapeHtml(title)}
+      </h2>
+      <p style="margin:0;color:#374151;font-size:12px;line-height:1.4;">
+        ${formatEmailText(body)}
+      </p>
     </div>
   `;
 }
@@ -142,68 +194,107 @@ function buildJobHtml(level, job) {
   const link = job.link_vaga || '';
 
   return `
-    <div style="max-width:680px;margin:0 auto 12px auto;background:#ffffff;border:1px solid #dbe1ea;border-radius:8px;overflow:hidden;font-family:Arial,Helvetica,sans-serif;color:#111827;">
-      <div style="padding:11px 14px;background:#111827;color:#ffffff;">
+    <div style="max-width:720px;margin:0 auto 14px auto;background:#ffffff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;font-family:Arial,Helvetica,sans-serif;color:#111827;">
+      <div style="padding:14px 16px 10px 16px;border-bottom:1px solid #e5e7eb;">
         <table role="presentation" style="width:100%;border-collapse:collapse;">
           <tr>
             <td style="vertical-align:top;padding:0;">
-              <div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#c7d2fe;line-height:1.1;">Nova vaga ${escapeHtml(level)}</div>
-              <h1 style="margin:4px 0 2px 0;font-size:15px;line-height:1.18;color:#ffffff;">${escapeHtml(job.titulo_vaga || 'Vaga encontrada')}</h1>
-              <p style="margin:0;color:#d1d5db;font-size:10.5px;line-height:1.2;">${escapeHtml(job.nome_empresa || 'Empresa não informada')}</p>
+              <div style="margin:0 0 4px 0;color:#6b7280;font-size:10px;line-height:1.2;text-transform:uppercase;letter-spacing:.08em;font-weight:700;">
+                Nova vaga ${escapeHtml(level)}
+              </div>
+
+              <h1 style="margin:0;color:#111827;font-size:18px;line-height:1.18;font-weight:800;">
+                ${escapeHtml(job.titulo_vaga || 'Vaga encontrada')}
+              </h1>
+
+              <p style="margin:4px 0 0 0;color:#4b5563;font-size:13px;line-height:1.25;">
+                ${escapeHtml(job.nome_empresa || 'Empresa nao informada')}
+              </p>
             </td>
-            <td style="width:78px;text-align:right;vertical-align:middle;padding:0;">
-              ${link ? `<a href="${escapeHtml(link)}" style="display:inline-block;padding:6px 8px;background:#2563eb;color:#ffffff;text-decoration:none;border-radius:5px;font-size:10px;font-weight:700;">Abrir vaga</a>` : ''}
+
+            <td style="width:96px;text-align:right;vertical-align:top;padding:0;">
+              ${link ? `
+                <a href="${escapeHtml(link)}" style="display:inline-block;padding:8px 10px;background:#111827;color:#ffffff;text-decoration:none;border-radius:7px;font-size:12px;line-height:1;font-weight:700;white-space:nowrap;">
+                  Abrir vaga
+                </a>
+              ` : ''}
             </td>
           </tr>
         </table>
+
+        ${buildScoreBar(score)}
       </div>
 
-      <div style="padding:10px 14px 12px 14px;">
-        <table role="presentation" style="width:100%;border-collapse:collapse;margin-bottom:5px;">
+      <div style="padding:12px 16px 14px 16px;">
+        <table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 6px 0;">
           <tr>
-            ${buildCompactInfoCell('Local', job.local)}
-            ${buildCompactInfoCell('Modelo', job.forma_trabalho)}
-            ${buildCompactInfoCell('Nível', job.nivel || job.nivel_vaga)}
-            ${buildCompactInfoCell('Aderência', `${score}/100`)}
+            ${buildMetaItem('Local', job.local)}
+            ${buildMetaItem('Modelo', job.forma_trabalho)}
+            ${buildMetaItem('Nivel', job.nivel || job.nivel_vaga)}
           </tr>
         </table>
 
-        ${buildCompactPanel('Resumo da IA', analysis.resumo, { background: '#f9fafb', border: '#e5e7eb' })}
-        ${buildCompactPanel('Por que combina', analysis.motivo, { background: '#ecfdf3', border: '#86efac', titleColor: '#166534', textColor: '#14532d' })}
+        <div style="padding:10px 0 8px 0;border-top:1px solid #f3f4f6;border-bottom:1px solid #f3f4f6;margin-bottom:10px;">
+          ${buildTextSection('Descricao da vaga', job.descricao_vaga)}
+          ${buildTextSection('Requisitos', job.requisitos_tecnicos)}
 
-        <table role="presentation" style="width:100%;border-collapse:collapse;margin-bottom:8px;">
+          <div style="margin:0;">
+            <h2 style="margin:0 0 5px 0;color:#111827;font-size:13px;line-height:1.2;">
+              Tecnologias
+            </h2>
+            ${buildTagList(job.tecnologias)}
+          </div>
+        </div>
+
+        <table role="presentation" style="width:100%;border-collapse:collapse;margin:0 0 10px 0;">
           <tr>
-            <td style="width:50%;vertical-align:top;padding:0 4px 0 0;">
-              <div style="padding:8px 9px;border:1px solid #e5e7eb;border-radius:7px;">
-                <h2 style="margin:0;font-size:12px;line-height:1.2;color:#111827;">Pontos fortes</h2>
+            <td style="width:50%;vertical-align:top;padding:0 7px 0 0;">
+              <h2 style="margin:0 0 4px 0;color:#111827;font-size:13px;line-height:1.2;">
+                Resumo da IA
+              </h2>
+              <p style="margin:0;color:#374151;font-size:12px;line-height:1.4;">
+                ${formatEmailText(analysis.resumo)}
+              </p>
+            </td>
+
+            <td style="width:50%;vertical-align:top;padding:0 0 0 7px;">
+              <h2 style="margin:0 0 4px 0;color:#111827;font-size:13px;line-height:1.2;">
+                Preparacao
+              </h2>
+              <p style="margin:0;color:#374151;font-size:12px;line-height:1.4;">
+                ${formatEmailText(analysis.sugestao_preparacao)}
+              </p>
+            </td>
+          </tr>
+        </table>
+
+        <div style="margin:0 0 10px 0;padding:8px 10px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">
+          <h2 style="margin:0 0 4px 0;color:#111827;font-size:13px;line-height:1.2;">
+            Por que combina
+          </h2>
+          <p style="margin:0;color:#374151;font-size:12px;line-height:1.4;">
+            ${formatEmailText(analysis.motivo)}
+          </p>
+        </div>
+
+        <table role="presentation" style="width:100%;border-collapse:collapse;">
+          <tr>
+            <td style="width:50%;vertical-align:top;padding:0 7px 0 0;">
+              <div style="padding:8px 10px;border:1px solid #e5e7eb;border-radius:8px;">
+                <h2 style="margin:0 0 5px 0;color:#111827;font-size:13px;line-height:1.2;">
+                  Pontos fortes
+                </h2>
                 ${buildList(analysis.pontos_fortes)}
               </div>
             </td>
-            <td style="width:50%;vertical-align:top;padding:0 0 0 4px;">
-              <div style="padding:8px 9px;border:1px solid #e5e7eb;border-radius:7px;">
-                <h2 style="margin:0;font-size:12px;line-height:1.2;color:#111827;">Pontos de atenção</h2>
+
+            <td style="width:50%;vertical-align:top;padding:0 0 0 7px;">
+              <div style="padding:8px 10px;border:1px solid #e5e7eb;border-radius:8px;">
+                <h2 style="margin:0 0 5px 0;color:#111827;font-size:13px;line-height:1.2;">
+                  Pontos de atencao
+                </h2>
                 ${buildList(analysis.pontos_atencao)}
               </div>
-            </td>
-          </tr>
-        </table>
-
-        ${buildCompactPanel('Sugestão de preparação', analysis.sugestao_preparacao)}
-
-        <div style="margin-bottom:7px;">
-          <h2 style="margin:0 0 5px 0;font-size:12px;line-height:1.2;color:#111827;">Tecnologias</h2>
-          ${buildTagList(job.tecnologias)}
-        </div>
-
-        <table role="presentation" style="width:100%;border-collapse:collapse;border-top:1px solid #e5e7eb;padding-top:8px;">
-          <tr>
-            <td style="width:50%;vertical-align:top;padding:8px 6px 0 0;">
-              <h2 style="margin:0 0 4px 0;font-size:12px;line-height:1.2;color:#111827;">Descrição</h2>
-              <p style="margin:0;color:#374151;font-size:10px;line-height:1.28;">${escapeHtml(job.descricao_vaga || 'Não informado.')}</p>
-            </td>
-            <td style="width:50%;vertical-align:top;padding:8px 0 0 6px;">
-              <h2 style="margin:0 0 4px 0;font-size:12px;line-height:1.2;color:#111827;">Requisitos</h2>
-              <p style="margin:0;color:#374151;font-size:10px;line-height:1.28;">${escapeHtml(job.requisitos_tecnicos || 'Não informado.')}</p>
             </td>
           </tr>
         </table>
@@ -211,40 +302,36 @@ function buildJobHtml(level, job) {
     </div>
   `;
 }
-function buildEmail(results) {
-  const successfulJobs = Object.entries(results)
-    .filter(([, result]) => result.ok && result.data)
-    .map(([level, result]) => ({ level, job: result.data }));
 
-  if (successfulJobs.length === 0) {
+function buildEmailFromJobs(jobs, fallbackResults) {
+  if (jobs.length === 0) {
     return {
       subject: 'Cron vagas: nenhuma vaga adequada encontrada',
-      text: `Nenhuma vaga adequada foi encontrada.\n\nResultado:\n${JSON.stringify(results, null, 2)}`,
+      text: `Nenhuma vaga adequada foi encontrada.\n\nResultado:\n${JSON.stringify(fallbackResults, null, 2)}`,
       html: `
-        <div style="font-family:Arial,Helvetica,sans-serif;max-width:680px;margin:0 auto;padding:24px;">
+        <div style="font-family:Arial,Helvetica,sans-serif;max-width:720px;margin:0 auto;padding:24px;">
           <h1 style="font-size:20px;color:#111827;">Nenhuma vaga adequada foi encontrada</h1>
-          <pre style="white-space:pre-wrap;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:14px;color:#374151;">${escapeHtml(JSON.stringify(results, null, 2))}</pre>
+          <pre style="white-space:pre-wrap;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:14px;color:#374151;">${escapeHtml(JSON.stringify(fallbackResults, null, 2))}</pre>
         </div>
       `,
     };
   }
 
   return {
-    subject: `Nova vaga adequada: ${successfulJobs[0].job.titulo_vaga || successfulJobs[0].level}`,
-    text: successfulJobs
+    subject: `Nova vaga adequada: ${jobs[0].job.titulo_vaga || jobs[0].level}`,
+    text: jobs
       .map(({ level, job }) => buildJobText(level, job))
       .join('\n\n---\n\n'),
     html: `
-      <div style="margin:0;padding:10px;background:#f3f4f6;">
-        ${successfulJobs.map(({ level, job }) => buildJobHtml(level, job)).join('')}
-        <p style="max-width:680px;margin:0 auto;color:#6b7280;font-family:Arial,Helvetica,sans-serif;font-size:10px;text-align:center;">
-          Email gerado automaticamente pela automaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o de vagas.
+      <div style="margin:0;padding:12px;background:#f6f7f9;">
+        ${jobs.map(({ level, job }) => buildJobHtml(level, job)).join('')}
+        <p style="max-width:720px;margin:0 auto;color:#9ca3af;font-family:Arial,Helvetica,sans-serif;font-size:10px;text-align:center;line-height:1.3;">
+          Email gerado automaticamente pela automacao de vagas.
         </p>
       </div>
     `,
   };
 }
-
 const RESUME_PAGE = {
   width: 595.28,
   height: 935.43,
@@ -253,40 +340,40 @@ const RESUME_PAGE = {
 
 function fixEncoding(value) {
   return String(value || '')
-    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡/g, 'ÃƒÆ’Ã‚Â¡')
-    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ /g, 'ÃƒÆ’Ã‚Â ')
-    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢/g, 'ÃƒÆ’Ã‚Â¢')
-    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£/g, 'ÃƒÆ’Ã‚Â£')
-    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©/g, 'ÃƒÆ’Ã‚Â©')
-    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âª/g, 'ÃƒÆ’Ã‚Âª')
-    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­/g, 'ÃƒÆ’Ã‚Â­')
-    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³/g, 'ÃƒÆ’Ã‚Â³')
-    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â´/g, 'ÃƒÆ’Ã‚Â´')
-    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âµ/g, 'ÃƒÆ’Ã‚Âµ')
-    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âº/g, 'ÃƒÆ’Ã‚Âº')
-    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§/g, 'ÃƒÆ’Ã‚Â§')
-    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â/g, 'ÃƒÆ’Ã‚Â')
-    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â°/g, 'ÃƒÆ’Ã¢â‚¬Â°')
-    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¡/g, 'ÃƒÆ’Ã¢â‚¬Â¡')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡/g, 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ /g, 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â ')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢/g, 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£/g, 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©/g, 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âª/g, 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âª')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­/g, 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³/g, 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â´/g, 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â´')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âµ/g, 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âµ')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âº/g, 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âº')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§/g, 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â/g, 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°/g, 'ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â°')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡/g, 'ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¡')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ|ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â/g, '-')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢/g, 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡/g, 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ /g, 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â ')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢/g, 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â£/g, 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©/g, 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âª/g, 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âª')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­/g, 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³/g, 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â´/g, 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â´')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âµ/g, 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âµ')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âº/g, 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âº')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â§/g, 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â/g, 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â°/g, 'ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â°')
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¡/g, 'ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¡')
     .replace(/ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“|ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â/g, '-')
-    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢/g, 'ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢')
-    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡/g, 'ÃƒÆ’Ã‚Â¡')
-    .replace(/ÃƒÆ’Ã†â€™ /g, 'ÃƒÆ’Ã‚Â ')
-    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢/g, 'ÃƒÆ’Ã‚Â¢')
-    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â£/g, 'ÃƒÆ’Ã‚Â£')
-    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©/g, 'ÃƒÆ’Ã‚Â©')
-    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âª/g, 'ÃƒÆ’Ã‚Âª')
-    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­/g, 'ÃƒÆ’Ã‚Â­')
-    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³/g, 'ÃƒÆ’Ã‚Â³')
-    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â´/g, 'ÃƒÆ’Ã‚Â´')
-    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âµ/g, 'ÃƒÆ’Ã‚Âµ')
-    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âº/g, 'ÃƒÆ’Ã‚Âº')
-    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§/g, 'ÃƒÆ’Ã‚Â§')
-    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â/g, 'ÃƒÆ’Ã‚Â')
-    .replace(/ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â°/g, 'ÃƒÆ’Ã¢â‚¬Â°')
-    .replace(/ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¡/g, 'ÃƒÆ’Ã¢â‚¬Â¡')
-    .replace(/ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ|ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â/g, '-')
-    .replace(/ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢/g, 'ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢');
+    .replace(/ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢/g, 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢');
 }
 
 function cleanLatexText(value) {
@@ -295,7 +382,7 @@ function cleanLatexText(value) {
     .replace(/\\href\{[^}]+\}\{([^}]+)\}/g, '$1')
     .replace(/\\textbf\{([^{}]+)\}/g, '$1')
     .replace(/\\textit\{([^{}]+)\}/g, '$1')
-    .replace(/\\textbullet/g, 'ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢')
+    .replace(/\\textbullet/g, 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢')
     .replace(/\\hfill/g, ' | ')
     .replace(/\\\\(?:\[[^\]]+\])?/g, '\n')
     .replace(/\\[a-zA-Z]+(?:\[[^\]]*\])?(?:\{[^}]*\})?/g, '')
@@ -317,10 +404,10 @@ function extractLatexSection(content, sectionName) {
 function parseInlineSection(sectionContent) {
   return [
     'Linguagens e Frameworks: PHP (Laravel), Java (Spring Boot), JavaScript/TypeScript, Node.js, React, Vue.js',
-    'Back-end e APIs: REST APIs, integraÃ§Ãµes com IA, OpenAPI/Swagger, JWT, Queues, Jobs, WebSocket, Postman',
+    'Back-end e APIs: REST APIs, integraÃƒÂ§ÃƒÂµes com IA, OpenAPI/Swagger, JWT, Queues, Jobs, WebSocket, Postman',
     'Infraestrutura e Ferramentas: Docker, CI/CD, Git, GitHub, SQL Server, PostgreSQL, MySQL',
     'Ferramentas e Metodologias: Clean Code, SOLID, Scrum, Kanban',
-    'Idiomas: PortuguÃªs nativo, InglÃªs C1, Espanhol C2',
+    'Idiomas: PortuguÃƒÂªs nativo, InglÃƒÂªs C1, Espanhol C2',
   ];
 }
 
@@ -368,17 +455,17 @@ function parseEntries(sectionContent) {
 
 const TEMPLATE_EXPERIENCE = [
   {
-    title: 'SERVIÃ‡O FEDERAL DE PROCESSAMENTO DE DADOS - SERPRO | BrasÃ­lia - DF',
-    role: 'Engenheiro de Software JÃºnior | Abril 2024 -- Abril 2026',
+    title: 'SERVIÃƒâ€¡O FEDERAL DE PROCESSAMENTO DE DADOS - SERPRO | BrasÃƒÂ­lia - DF',
+    role: 'Engenheiro de Software JÃƒÂºnior | Abril 2024 -- Abril 2026',
     items: [
-      'Desenvolvimento e manutenÃ§Ã£o de APIs REST com Java (Spring Boot) e PHP (Laravel).',
-      'Desenvolvimento e manutenÃ§Ã£o de interfaces com React e Vue.js.',
-      'ManutenÃ§Ã£o de banco de dados relacional e melhoria do fluxo de entrega.',
-      'RealizaÃ§Ã£o de testes com JUnit, PHPUnit e anÃ¡lise de requisitos.',
+      'Desenvolvimento e manutenÃƒÂ§ÃƒÂ£o de APIs REST com Java (Spring Boot) e PHP (Laravel).',
+      'Desenvolvimento e manutenÃƒÂ§ÃƒÂ£o de interfaces com React e Vue.js.',
+      'ManutenÃƒÂ§ÃƒÂ£o de banco de dados relacional e melhoria do fluxo de entrega.',
+      'RealizaÃƒÂ§ÃƒÂ£o de testes com JUnit, PHPUnit e anÃƒÂ¡lise de requisitos.',
     ],
   },
   {
-    title: 'Freelance - Landing Page Disk Baterias DF | BrasÃ­lia, DF - Mai 2026',
+    title: 'Freelance - Landing Page Disk Baterias DF | BrasÃƒÂ­lia, DF - Mai 2026',
     role: '',
     items: [
       'Desenvolvimento com React e Tailwind CSS | layout mobile-first.',
@@ -386,16 +473,16 @@ const TEMPLATE_EXPERIENCE = [
     ],
   },
   {
-    title: 'Freelance Full Stack - Sistema de GestÃ£o de Oficina MecÃ¢nica | BrasÃ­lia, DF - Nov 2025',
+    title: 'Freelance Full Stack - Sistema de GestÃƒÂ£o de Oficina MecÃƒÂ¢nica | BrasÃƒÂ­lia, DF - Nov 2025',
     role: '',
     items: [
       'Desenvolvimento full stack com Laravel, Vue.js e Tailwind CSS.',
-      'GestÃ£o de clientes, serviÃ§os, controle financeiro e dashboard interativo.',
-      'AutenticaÃ§Ã£o com Laravel Sanctum | 2FA com Google Authenticator | Filas (Laravel Queues).',
+      'GestÃƒÂ£o de clientes, serviÃƒÂ§os, controle financeiro e dashboard interativo.',
+      'AutenticaÃƒÂ§ÃƒÂ£o com Laravel Sanctum | 2FA com Google Authenticator | Filas (Laravel Queues).',
     ],
   },
   {
-    title: 'Freelance - Landing Page ONG de AdoÃ§Ã£o de Animais | BrasÃ­lia, DF - Ago 2025',
+    title: 'Freelance - Landing Page ONG de AdoÃƒÂ§ÃƒÂ£o de Animais | BrasÃƒÂ­lia, DF - Ago 2025',
     role: '',
     items: [
       'Desenvolvimento com React e Tailwind CSS | layout mobile-first.',
@@ -406,30 +493,30 @@ const TEMPLATE_EXPERIENCE = [
 
 const TEMPLATE_PROJECTS = [
   {
-    title: 'NutriTreino - Sistema de GestÃ£o Nutricional e Treinos | Mar - Mai 2026',
+    title: 'NutriTreino - Sistema de GestÃƒÂ£o Nutricional e Treinos | Mar - Mai 2026',
     role: '',
     items: [
       'Desenvolvimento full stack com Laravel, React.js, Vite e CSS responsivo.',
-      'GestÃ£o de pacientes/alunos, planos alimentares, programas de treino, progresso corporal, fotos de evoluÃ§Ã£o, check-ins semanais, chat em tempo real, chamada de vÃ­deo com WebRTC e dashboard interativo.',
-      'IntegraÃ§Ã£o com IA Gemini para geraÃ§Ã£o e ajuste de rascunhos de dietas e treinos com base em objetivos, preferÃªncias, limitaÃ§Ãµes e dados fÃ­sicos do paciente.',
-      'AutenticaÃ§Ã£o com Laravel Sanctum; Filas (Queues); Upload de arquivos; NotificaÃ§Ãµes por e-mail; Pusher para eventos em tempo real.',
+      'GestÃƒÂ£o de pacientes/alunos, planos alimentares, programas de treino, progresso corporal, fotos de evoluÃƒÂ§ÃƒÂ£o, check-ins semanais, chat em tempo real, chamada de vÃƒÂ­deo com WebRTC e dashboard interativo.',
+      'IntegraÃƒÂ§ÃƒÂ£o com IA Gemini para geraÃƒÂ§ÃƒÂ£o e ajuste de rascunhos de dietas e treinos com base em objetivos, preferÃƒÂªncias, limitaÃƒÂ§ÃƒÂµes e dados fÃƒÂ­sicos do paciente.',
+      'AutenticaÃƒÂ§ÃƒÂ£o com Laravel Sanctum; Filas (Queues); Upload de arquivos; NotificaÃƒÂ§ÃƒÂµes por e-mail; Pusher para eventos em tempo real.',
     ],
   },
   {
-    title: 'AutomaÃ§Ã£o Inteligente de Busca de Vagas | Mai 2026',
+    title: 'AutomaÃƒÂ§ÃƒÂ£o Inteligente de Busca de Vagas | Mai 2026',
     role: '',
     items: [
-      'Desenvolvido em Node.js com integraÃ§Ã£o Ã  IA Gemini.',
-      'Utiliza inteligÃªncia artificial para analisar e comparar os requisitos das vagas com o currÃ­culo do candidato, identificando oportunidades com maior aderÃªncia ao perfil.',
-      'Envia notificaÃ§Ãµes por e-mail contendo a avaliaÃ§Ã£o da compatibilidade e o link direto para candidatura.',
+      'Desenvolvido em Node.js com integraÃƒÂ§ÃƒÂ£o ÃƒÂ  IA Gemini.',
+      'Utiliza inteligÃƒÂªncia artificial para analisar e comparar os requisitos das vagas com o currÃƒÂ­culo do candidato, identificando oportunidades com maior aderÃƒÂªncia ao perfil.',
+      'Envia notificaÃƒÂ§ÃƒÂµes por e-mail contendo a avaliaÃƒÂ§ÃƒÂ£o da compatibilidade e o link direto para candidatura.',
     ],
   },
   {
-    title: 'AutomaÃ§Ã£o de Ofertas com Shopee Afiliados e Telegram | Jun 2026',
+    title: 'AutomaÃƒÂ§ÃƒÂ£o de Ofertas com Shopee Afiliados e Telegram | Jun 2026',
     role: '',
     items: [
       'Desenvolvido em Java com Spring Boot, Maven, Docker e arquitetura em camadas.',
-      'Integra-se Ã  API GraphQL de Afiliados da Shopee para buscar produtos em promoÃ§Ã£o periodicamente.',
+      'Integra-se ÃƒÂ  API GraphQL de Afiliados da Shopee para buscar produtos em promoÃƒÂ§ÃƒÂ£o periodicamente.',
       'Envia automaticamente ofertas para um grupo do Telegram.',
       'https://t.me/viktorwareofertas',
     ],
@@ -438,8 +525,8 @@ const TEMPLATE_PROJECTS = [
 
 const TEMPLATE_EDUCATION = [
   {
-    title: 'Universidade CatÃ³lica de BrasÃ­lia - UCB | BrasÃ­lia - DF',
-    role: 'Engenharia de Software | Mar 2023 -- Dez 2026 (PrevisÃ£o)',
+    title: 'Universidade CatÃƒÂ³lica de BrasÃƒÂ­lia - UCB | BrasÃƒÂ­lia - DF',
+    role: 'Engenharia de Software | Mar 2023 -- Dez 2026 (PrevisÃƒÂ£o)',
     items: [],
   },
 ];
@@ -447,7 +534,7 @@ const TEMPLATE_EDUCATION = [
 function getResumeData(content) {
   return {
     summary: cleanLatexText(extractLatexSection(content, 'Resumo Profissional')),
-    skills: parseInlineSection(extractLatexSection(content, 'CompetÃªncias')),
+    skills: parseInlineSection(extractLatexSection(content, 'CompetÃƒÂªncias')),
     experience: TEMPLATE_EXPERIENCE,
     projects: TEMPLATE_PROJECTS,
     education: TEMPLATE_EDUCATION,
@@ -559,7 +646,7 @@ function drawEntry(doc, entry, y) {
 
   for (const item of entry.items) {
     y = ensureSpace(doc, y, 24);
-    doc.font('Helvetica').fontSize(9.1).text('Ã¢â‚¬Â¢', RESUME_PAGE.margin + 10, y, {
+    doc.font('Helvetica').fontSize(9.1).text('ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢', RESUME_PAGE.margin + 10, y, {
       width: 8,
       continued: false,
     });
@@ -605,7 +692,7 @@ function buildResumePdf(content) {
 
     y = drawText(
       doc,
-      'BrasÃƒÂ­lia - DF Ã¢â‚¬Â¢ (61) 92000-1340 Ã¢â‚¬Â¢ viktorlacerda@gmail.com Ã¢â‚¬Â¢ linkedin.com/in/viktor-lacerda-148310127 Ã¢â‚¬Â¢ github.com/vla2005',
+      'BrasÃƒÆ’Ã‚Â­lia - DF ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ (61) 92000-1340 ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ viktorlacerda@gmail.com ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ linkedin.com/in/viktor-lacerda-148310127 ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ github.com/vla2005',
       RESUME_PAGE.margin,
       y,
       {
@@ -618,21 +705,21 @@ function buildResumePdf(content) {
     y = drawSectionTitle(doc, 'Resumo Profissional', y);
     y = drawParagraph(doc, resume.summary, y);
 
-    y = drawSectionTitle(doc, 'CompetÃƒÂªncias', y);
+    y = drawSectionTitle(doc, 'CompetÃƒÆ’Ã‚Âªncias', y);
     y = drawSkillLines(doc, resume.skills, y);
 
-    y = drawSectionTitle(doc, 'ExperiÃƒÂªncia Profissional', y);
+    y = drawSectionTitle(doc, 'ExperiÃƒÆ’Ã‚Âªncia Profissional', y);
     for (const entry of resume.experience) {
       y = drawEntry(doc, entry, y);
     }
 
-    y = drawSectionTitle(doc, 'Projetos Pessoais / AcadÃƒÂªmicos', y);
+    y = drawSectionTitle(doc, 'Projetos Pessoais / AcadÃƒÆ’Ã‚Âªmicos', y);
     for (const entry of resume.projects) {
       y = drawEntry(doc, entry, y);
     }
 
     if (resume.education.length > 0) {
-      y = drawSectionTitle(doc, 'EducaÃƒÂ§ÃƒÂ£o', y);
+      y = drawSectionTitle(doc, 'EducaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o', y);
       for (const entry of resume.education) {
         y = drawEntry(doc, entry, y);
       }
@@ -728,7 +815,7 @@ function extractResumeSummary(content) {
   const match = String(content || '').match(/\\section\{Resumo Profissional\}([\s\S]*?)(?=\\section\{|\\end\{document\}|$)/i);
   const summary = match ? normalizeResumeText(match[1]) : '';
 
-  if (!summary || /Ã|Â|â/.test(summary)) {
+  if (!summary || /Ãƒ|Ã‚|Ã¢/.test(summary)) {
     return 'Engenheiro de Software full stack com 2 anos de experiencia, com foco em Java, PHP, JavaScript e arquitetura escalavel. Experiencia na construcao de APIs REST aplicando Clean Architecture, Clean Code, otimizacoes e SOLID.';
   }
 
@@ -1048,17 +1135,15 @@ module.exports = {
       };
     }
 
-    if (successfulJobs.length > 0) {
-      const sentJobs = removeExpiredSentJobs(readSentJobs());
-      saveSentJobs(sentJobs);
-      const newJobs = successfulJobs.filter(({ keys }) => !keys.some((key) => sentJobs[key]));
+    const sentJobs = removeExpiredSentJobs(readSentJobs());
+    saveSentJobs(sentJobs);
+    const jobsToSend = successfulJobs.filter(({ keys }) => !keys.some((key) => sentJobs[key]));
 
-      if (newJobs.length === 0) {
-        return {
-          sent: false,
-          reason: 'A vaga encontrada ja foi enviada anteriormente.',
-        };
-      }
+    if (jobsToSend.length === 0) {
+      return {
+        sent: false,
+        reason: 'A vaga encontrada ja foi enviada anteriormente.',
+      };
     }
 
     const nodemailer = getNodemailer();
@@ -1072,8 +1157,8 @@ module.exports = {
       },
     });
 
-    const email = buildEmail(results);
-    const attachments = await buildResumeAttachments(successfulJobs);
+    const email = buildEmailFromJobs(jobsToSend, results);
+    const attachments = await buildResumeAttachments(jobsToSend);
 
     await transporter.sendMail({
       from: getEmailFrom(),
@@ -1084,12 +1169,11 @@ module.exports = {
       attachments,
     });
 
-    const successfulJobsAfterSend = getSuccessfulJobs(results);
-    if (successfulJobsAfterSend.length > 0) {
+    if (jobsToSend.length > 0) {
       const sentJobs = readSentJobs();
       const now = new Date().toISOString();
 
-      successfulJobsAfterSend.forEach(({ keys, job }) => {
+      jobsToSend.forEach(({ keys, job }) => {
         keys.forEach((key) => {
           sentJobs[key] = {
             sent_at: now,
@@ -1105,5 +1189,6 @@ module.exports = {
     return { sent: true };
   },
 };
+
 
 

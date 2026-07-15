@@ -1,0 +1,77 @@
+name: CI/CD Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy to AWS EC2
+    runs-on: ubuntu-latest
+
+    env:
+      APP_DIR: ${{ secrets.EC2_APP_DIR }}
+      SSH_HOST: ${{ secrets.EC2_HOST }}
+      SSH_USER: ${{ secrets.EC2_USER }}
+      SSH_KEY_PATH: /home/runner/.ssh/api-vagas-ec2
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check JavaScript syntax
+        run: find . -path ./node_modules -prune -o -name "*.js" -print0 | xargs -0 -n1 node --check
+
+      - name: Build deployment archive
+        run: |
+          tar \
+            --exclude=".git" \
+            --exclude=".github" \
+            --exclude="node_modules" \
+            --exclude=".env" \
+            -czf api-vagas.tar.gz .
+
+      - name: Configure SSH
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.EC2_SSH_KEY }}" > "$SSH_KEY_PATH"
+          chmod 600 "$SSH_KEY_PATH"
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+
+      - name: Upload archive to EC2
+        run: scp -i "$SSH_KEY_PATH" api-vagas.tar.gz "$SSH_USER@$SSH_HOST:/tmp/api-vagas.tar.gz"
+
+      - name: Deploy on EC2
+        run: |
+          ssh -i "$SSH_KEY_PATH" "$SSH_USER@$SSH_HOST" "APP_DIR='$APP_DIR' bash -s" <<'EOF'
+            set -euo pipefail
+
+            mkdir -p "$APP_DIR"
+            tar -xzf /tmp/api-vagas.tar.gz -C "$APP_DIR"
+
+            cd "$APP_DIR"
+            npm ci --omit=dev
+
+            if pm2 describe api-vagas >/dev/null 2>&1; then
+              pm2 restart api-vagas --update-env
+            else
+              pm2 start index.js --name api-vagas
+            fi
+
+            pm2 save
+          EOF

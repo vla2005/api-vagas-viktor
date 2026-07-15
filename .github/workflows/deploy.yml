@@ -10,16 +10,21 @@ concurrency:
   group: deploy-production
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   deploy:
     name: Deploy to AWS EC2
     runs-on: ubuntu-latest
 
     env:
-      APP_DIR: ${{ secrets.EC2_APP_DIR }}
-      SSH_HOST: ${{ secrets.EC2_HOST }}
-      SSH_USER: ${{ secrets.EC2_USER }}
-      SSH_KEY_PATH: /home/runner/.ssh/api-vagas-ec2
+      APP_DIR: ${{ vars.EC2_APP_DIR }}
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+      S3_DEPLOY_BUCKET: ${{ vars.S3_DEPLOY_BUCKET }}
+      ARTIFACT_KEY: deploy/api-vagas-${{ github.sha }}.tar.gz
 
     steps:
       - name: Checkout repository
@@ -46,32 +51,62 @@ jobs:
             --exclude=".env" \
             -czf "$RUNNER_TEMP/api-vagas.tar.gz" .
 
-      - name: Configure SSH
+      - name: Authenticate to AWS with OIDC
+        id: aws-auth
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Upload archive to private S3 bucket
+        run: aws s3 cp "$RUNNER_TEMP/api-vagas.tar.gz" "s3://$S3_DEPLOY_BUCKET/$ARTIFACT_KEY"
+
+      - name: Deploy through AWS Systems Manager
         run: |
-          install -m 700 -d ~/.ssh
-          printf '%s\n' "${{ secrets.EC2_SSH_KEY }}" > "$SSH_KEY_PATH"
-          chmod 600 "$SSH_KEY_PATH"
-          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+          artifact_uri="s3://$S3_DEPLOY_BUCKET/$ARTIFACT_KEY"
+          parameters=$(jq -n \
+            --arg artifact_uri "$artifact_uri" \
+            --arg app_dir "$APP_DIR" \
+            '{commands: [
+              "set -euo pipefail",
+              "aws s3 cp \($artifact_uri) /tmp/api-vagas.tar.gz",
+              "mkdir -p \($app_dir)",
+              "tar -xzf /tmp/api-vagas.tar.gz -C \($app_dir)",
+              "chown -R ec2-user:ec2-user \($app_dir)",
+              ("sudo -u ec2-user -H bash -lc " + (("cd " + $app_dir + " && npm ci --omit=dev && if pm2 describe api-vagas >/dev/null 2>&1; then pm2 restart api-vagas --update-env; else pm2 start index.js --name api-vagas; fi && pm2 save") | @sh))
+            ]}')
 
-      - name: Upload archive to EC2
-        run: scp -i "$SSH_KEY_PATH" "$RUNNER_TEMP/api-vagas.tar.gz" "$SSH_USER@$SSH_HOST:/tmp/api-vagas.tar.gz"
+          command_id=$(aws ssm send-command \
+            --instance-ids "$EC2_INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploy api-vagas $GITHUB_SHA" \
+            --parameters "$parameters" \
+            --query "Command.CommandId" \
+            --output text)
 
-      - name: Deploy on EC2
-        run: |
-          ssh -i "$SSH_KEY_PATH" "$SSH_USER@$SSH_HOST" "APP_DIR='$APP_DIR' bash -s" <<'EOF'
-            set -euo pipefail
+          echo "SSM command: $command_id"
+          status="Pending"
+          for attempt in {1..60}; do
+            status=$(aws ssm get-command-invocation \
+              --command-id "$command_id" \
+              --instance-id "$EC2_INSTANCE_ID" \
+              --query "Status" \
+              --output text 2>/dev/null || true)
 
-            mkdir -p "$APP_DIR"
-            tar -xzf /tmp/api-vagas.tar.gz -C "$APP_DIR"
+            case "$status" in
+              Success|Failed|Cancelled|TimedOut) break ;;
+            esac
 
-            cd "$APP_DIR"
-            npm ci --omit=dev
+            sleep 10
+          done
 
-            if pm2 describe api-vagas >/dev/null 2>&1; then
-              pm2 restart api-vagas --update-env
-            else
-              pm2 start index.js --name api-vagas
-            fi
+          aws ssm get-command-invocation \
+            --command-id "$command_id" \
+            --instance-id "$EC2_INSTANCE_ID" \
+            --query '{Status:Status,Output:StandardOutputContent,Error:StandardErrorContent}'
 
-            pm2 save
-          EOF
+          test "$status" = "Success"
+
+      - name: Remove deployment archive from S3
+        if: always() && steps.aws-auth.outcome == 'success'
+        run: aws s3 rm "s3://$S3_DEPLOY_BUCKET/$ARTIFACT_KEY"

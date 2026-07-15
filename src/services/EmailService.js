@@ -343,32 +343,26 @@ const CLEAN_EXPERIENCES = [
     title: 'SERVIÇO FEDERAL DE PROCESSAMENTO DE DADOS - SERPRO | Brasília - DF',
     role: 'Engenheiro de Software Júnior | Abril 2024 -- Abril 2026',
     items: [
-      'Desenvolvimento e manutenção de APIs REST com Java (Spring Boot) e PHP (Laravel).',
-      'Desenvolvimento e manutenção de interfaces com React e Vue.js.',
-      'Manutenção de banco de dados relacional e melhoria do fluxo de entrega.',
-      'Realização de testes com JUnit, PHPUnit e análise de requisitos.',
-    ],
-  },
-  {
-    title: 'Freelance - Landing Page Disk Baterias DF | Brasília, DF - Mai 2026',
-    items: [
-      'Desenvolvimento com React e Tailwind CSS | layout mobile-first.',
-      'https://diskbaterias22hs.com',
+      'Atuei na migração de sistema legado para uma arquitetura mais moderna, garantindo continuidade das funcionalidades e apoiando a estabilização de bugs e erros durante a transição e novas releases.',
+      'Otimizei queries e implementei cache em APIs REST, reduzindo o tempo de resposta de 5 segundos para menos de 1 segundo e eliminando quedas durante picos de tráfego.',
+      'Atuei em melhorias de acessibilidade no front-end, ampliando a usabilidade e a conformidade com boas práticas de acessibilidade.',
+      'Desenvolvi e mantive APIs REST com PHP/Laravel e Java/Spring Boot e interfaces web com Vue.js e React para integração entre módulos e sistemas.',
+      'Mantive bancos de dados relacionais, consultas SQL, listagens e relatórios, com testes em JUnit e PHPUnit e apoio a fluxos de entrega via Git, GitHub, Docker e CI/CD.',
     ],
   },
   {
     title: 'Freelance Full Stack - Sistema de Gestão de Oficina Mecânica | Brasília, DF - Nov 2025',
     items: [
-      'Desenvolvimento full stack com Laravel, Vue.js e Tailwind CSS.',
-      'Gestão de clientes, serviços, controle financeiro e dashboard interativo.',
-      'Autenticação com Laravel Sanctum | 2FA com Google Authenticator | Filas (Laravel Queues).',
+      'Substituí o controle manual por planilhas e calculadora por um sistema completo de gestão, automatizando a geração de ordens de serviço e cálculos financeiros antes realizados manualmente.',
+      'Desenvolvi a aplicação full stack com Laravel, Vue.js, MySQL e Tailwind CSS, incluindo dashboard interativo para acompanhamento de clientes, serviços e financeiro em tempo real.',
+      'Implementei autenticação com Laravel Sanctum, 2FA com Google Authenticator e filas com Laravel Queues, garantindo segurança e processamento assíncrono de tarefas.',
     ],
   },
   {
-    title: 'Freelance - Landing Page ONG de Adoção de Animais | Brasília, DF - Ago 2025',
+    title: 'Freelance - Landing Page Disk Baterias DF | Brasília, DF - Mai 2026',
     items: [
-      'Desenvolvimento com React e Tailwind CSS | layout mobile-first.',
-      'https://www.projetoadotar.site',
+      'Desenvolvi uma landing page responsiva com React e Tailwind CSS, seguindo abordagem mobile-first.',
+      'Realizei ajustes de layout, performance, responsividade e experiência do usuário.',
     ],
   },
 ];
@@ -377,18 +371,18 @@ const CLEAN_PROJECTS = [
   {
     title: 'NutriTreino - Sistema de Gestão Nutricional e Treinos | Mar - Mai 2026',
     items: [
-      'Desenvolvimento full stack com Laravel, React.js, Vite e CSS responsivo.',
-      'Gestão de pacientes/alunos, planos alimentares, programas de treino, progresso corporal, fotos de evolução, check-ins semanais, chat em tempo real, chamada de vídeo com WebRTC e dashboard interativo.',
-      'Integração com IA Gemini para geração e ajuste de rascunhos de dietas e treinos com base em objetivos, preferências, limitações e dados físicos do paciente.',
-      'Autenticação com Laravel Sanctum; Filas (Queues); Upload de arquivos; Notificações por e-mail; Pusher para eventos em tempo real.',
+      'Centralizei em um único sistema informações antes dispersas entre PDFs, WhatsApp e chamadas de vídeo em plataformas separadas, reduzindo confusão e perda de dados entre profissional e paciente/aluno.',
+      'Integrei a IA Gemini para gerar rascunhos de dietas e treinos personalizados, economizando tempo do profissional e apoiando a criação de refeições e exercícios adequados a cada paciente.',
+      'Desenvolvi dois dashboards: um para o profissional gerenciar pacientes/alunos e planos e outro para o paciente/aluno acessar dieta, treino e gráficos de evolução baseados nos check-ins semanais.',
+      'Desenvolvi a aplicação full stack com Laravel, React.js e Vite, incluindo chat em tempo real com WebSocket, videochamada via WebRTC e upload de fotos de evolução corporal.',
     ],
   },
   {
     title: 'Automação Inteligente de Busca de Vagas | Mai 2026',
     items: [
-      'Desenvolvido em Node.js com integração à IA Gemini.',
-      'Utiliza inteligência artificial para analisar e comparar os requisitos das vagas com o currículo do candidato, identificando oportunidades com maior aderência ao perfil.',
-      'Envia notificações por e-mail contendo a avaliação da compatibilidade e o link direto para candidatura.',
+      'Desenvolvido em Node.js com integração à IA Gemini para análise de aderência entre vagas e currículo.',
+      'Automatiza a busca, filtragem e avaliação de oportunidades, priorizando vagas compatíveis com o perfil do candidato.',
+      'Envia notificações por e-mail com avaliação de compatibilidade, currículo otimizado em anexo e link direto para candidatura.',
       'Deploy em AWS EC2, com PM2, Nginx como proxy reverso e execução recorrente por cron jobs.',
       'Pipeline de CI/CD com GitHub Actions, autenticação federada via OIDC e deploy automatizado pelo AWS Systems Manager.',
     ],
@@ -794,5 +788,3 @@ module.exports = {
     return { sent: true };
   },
 };
-
-

@@ -27,46 +27,38 @@ Engenheiro de Software full stack com 2 anos de experiencia, com foco em Java, P
 
 COMPETENCIAS COMPROVADAS
 - Linguagens e frameworks: PHP, Laravel, Java, Spring Boot, JavaScript, TypeScript, Node.js, Vue.js, React, HTML, CSS e Tailwind CSS.
-- Front-end: Vue.js, React, JavaScript, desenvolvimento de componentes, interfaces responsivas e manutencao de telas.
+- Front-end: Vue.js, React, JavaScript, desenvolvimento de componentes, interfaces responsivas, acessibilidade e manutencao de telas.
 - Banco de dados: MySQL, PostgreSQL, SQL Server, consultas SQL, relatorios, listagens, tratamento e otimizacao de dados.
-- APIs e integracoes: REST APIs, OpenAPI/Swagger, Postman, JWT, OAuth, Keycloak, Queues, RabbitMQ, Jobs e WebSocket.
+- APIs e integracoes: REST APIs, OpenAPI/Swagger, Postman, JWT, OAuth, Keycloak, Laravel Sanctum, Queues, RabbitMQ, Jobs, WebSocket e WebRTC.
 - Boas praticas e arquitetura: Clean Architecture, Clean Code, SOLID, organizacao de codigo, boas praticas de programacao e arquitetura em camadas.
-- Cloud e DevOps: AWS, Oracle Cloud, Docker, CI/CD, Git, GitHub e GitHub Actions.
+- Cloud e DevOps: AWS (EC2, S3 e Systems Manager), Oracle Cloud (OCI), Docker, Nginx, PM2, CI/CD, OIDC, Git, GitHub e GitHub Actions.
 - Testes: PHPUnit e JUnit.
 - Metodologias: Scrum e Kanban.
 - Idiomas: Portugues nativo, Ingles C1 e Espanhol C2.
 
 EXPERIENCIA PROFISSIONAL
 1. SERVICO FEDERAL DE PROCESSAMENTO DE DADOS - SERPRO | Engenheiro de Software Junior | Brasilia - DF | abril/2024 a abril/2026
-- Desenvolvimento e manutencao de APIs REST utilizando PHP/Laravel e Java/Spring Boot.
-- Desenvolvimento e manutencao de interfaces web com Vue.js e React.
-- Criacao, manutencao e consumo de endpoints REST para integracao entre modulos e sistemas.
-- Investigacao de relatos de erro, correcao de bugs e apoio na manutencao de modulos existentes.
-- Suporte tecnico a demandas de usuarios, analise de requisitos e identificacao de melhorias nos sistemas.
-- Manutencao de bancos de dados relacionais, consultas SQL, listagens, relatorios e apoio na otimizacao de dados.
-- Testes com JUnit e PHPUnit e apoio aos fluxos de entrega com Git, GitHub, Docker e CI/CD.
+- Atuacao na migracao de sistema legado para uma arquitetura mais moderna, garantindo continuidade das funcionalidades e apoiando a estabilizacao de bugs e erros durante a transicao e novas releases.
+- Otimizacao de queries e implementacao de cache em APIs REST, reduzindo o tempo de resposta de 5 segundos para menos de 1 segundo e eliminando quedas durante picos de trafego.
+- Melhorias de acessibilidade no front-end, ampliando a usabilidade e a conformidade com boas praticas de acessibilidade.
+- Desenvolvimento e manutencao de APIs REST com PHP/Laravel e Java/Spring Boot e de interfaces web com Vue.js e React para integracao entre modulos e sistemas.
+- Manutencao de bancos de dados relacionais, consultas SQL, listagens e relatorios, com testes em JUnit e PHPUnit e apoio a fluxos de entrega via Git, GitHub, Docker e CI/CD.
 
 2. Freelance Full Stack - Sistema de Gestao de Oficina Mecanica | Brasilia - DF | novembro/2025
-- Desenvolvimento full stack com Laravel, Vue.js, MySQL/PostgreSQL e Tailwind CSS.
-- Funcionalidades para gestao de clientes e servicos, controle financeiro, relatorios e dashboard interativo.
-- Componentes Vue.js no front-end e regras de negocio com PHP/Laravel no back-end.
-- Endpoints REST para comunicacao entre front-end e back-end.
-- Autenticacao com Laravel Sanctum, 2FA com Google Authenticator e filas com Laravel Queues.
+- Substituicao do controle manual por planilhas e calculadora por um sistema completo de gestao, automatizando a geracao de ordens de servico e calculos financeiros antes realizados manualmente.
+- Desenvolvimento full stack com Laravel, Vue.js, MySQL e Tailwind CSS, incluindo dashboard interativo para acompanhamento de clientes, servicos e financeiro em tempo real.
+- Autenticacao com Laravel Sanctum, 2FA com Google Authenticator e filas com Laravel Queues, garantindo seguranca e processamento assincrono de tarefas.
 
 3. Freelance - Landing Page Disk Baterias DF | Brasilia - DF | maio/2026
 - Landing page responsiva com React e Tailwind CSS, seguindo abordagem mobile-first.
 - Ajustes de layout, performance, responsividade e experiencia do usuario.
-- Website: https://diskbaterias22hs.com
-
-4. Freelance - Landing Page ONG de Adocao de Animais | Brasilia - DF | agosto/2025
-- Landing page responsiva com React e Tailwind CSS, seguindo abordagem mobile-first.
 
 PROJETOS PESSOAIS E ACADEMICOS
 1. NutriTreino - Sistema de Gestao Nutricional e Treinos | marco/2026 a maio/2026
-- Desenvolvimento full stack com Laravel, React.js, Vite, CSS responsivo e banco de dados relacional.
-- Gestao de pacientes/alunos, planos alimentares, programas de treino, progresso corporal, fotos de evolucao, check-ins semanais, chat em tempo real, chamada de video com WebRTC e dashboard interativo.
-- Integracao com IA Gemini para gerar e ajustar rascunhos de dietas e treinos com base em objetivos, preferencias, limitacoes e dados fisicos do paciente.
-- Laravel Sanctum, Queues, upload de arquivos, notificacoes por e-mail e WebSocket para eventos em tempo real.
+- Centralizacao em um unico sistema de informacoes antes dispersas entre PDFs, WhatsApp e chamadas de video em plataformas separadas, reduzindo confusao e perda de dados entre profissional e paciente/aluno.
+- Integracao com IA Gemini para gerar rascunhos de dietas e treinos personalizados, economizando tempo do profissional e apoiando a criacao de refeicoes e exercicios adequados a cada paciente.
+- Desenvolvimento de dois dashboards: um para o profissional gerenciar pacientes/alunos e planos e outro para o paciente/aluno acessar dieta, treino e graficos de evolucao baseados nos check-ins semanais.
+- Desenvolvimento full stack com Laravel, React.js e Vite, incluindo chat em tempo real com WebSocket, videochamada via WebRTC e upload de fotos de evolucao corporal.
 
 2. Automacao Inteligente de Busca de Vagas | maio/2026
 - Node.js com integracao a IA Gemini para analisar a aderencia entre vagas e curriculo.
@@ -79,7 +71,6 @@ PROJETOS PESSOAIS E ACADEMICOS
 - Java, Spring Boot, Maven, Docker e arquitetura em camadas.
 - Integracao com API GraphQL de Afiliados da Shopee para buscar promocoes periodicamente.
 - Envio automatico de ofertas para um grupo do Telegram.
-- Projeto em operacao: https://t.me/viktorwareofertas
 
 EDUCACAO
 - Bacharelado em Engenharia de Software | Universidade Catolica de Brasilia - UCB | Brasilia - DF | marco/2023 a dezembro/2026 (previsao).
@@ -184,6 +175,9 @@ REGRAS DO CURRICULO PERSONALIZADO:
 8. O campo "curriculo_personalizado_latex" deve conter um documento LaTeX completo, iniciando com "\\documentclass" e terminando com "\\end{document}".
 9. Preserve a distincao entre experiencia profissional e projetos. Nao apresente projeto pessoal como emprego nem competencia apenas listada como experiencia pratica.
 10. Aproveite fatos, resultados, links e detalhes tecnicos relevantes do curriculo base, mas mantenha o documento conciso e legivel.
+11. Priorize realizacoes no formato problema, acao e resultado. Preserve integralmente metricas comprovadas, especialmente a reducao do tempo de resposta de 5 segundos para menos de 1 segundo.
+12. Nao enfraqueca resultados especificos transformando-os em responsabilidades genericas. Destaque migracao de legado, performance, acessibilidade, automatizacao de processos e centralizacao de dados quando forem relevantes para a vaga.
+13. Nao use superlativos ou senioridade nao comprovada, como "especialista", "dominio avancado" ou "experiencia solida". Descreva objetivamente os 2 anos de experiencia e as evidencias reais do curriculo base.
 
 RESPOSTA:
 Responda exclusivamente com JSON valido, sem markdown fora dos campos JSON e sem texto fora do JSON.

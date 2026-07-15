@@ -44,7 +44,7 @@ jobs:
             --exclude=".github" \
             --exclude="node_modules" \
             --exclude=".env" \
-            -czf api-vagas.tar.gz .
+            -czf "$RUNNER_TEMP/api-vagas.tar.gz" .
 
       - name: Configure SSH
         run: |
@@ -54,7 +54,7 @@ jobs:
           ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
 
       - name: Upload archive to EC2
-        run: scp -i "$SSH_KEY_PATH" api-vagas.tar.gz "$SSH_USER@$SSH_HOST:/tmp/api-vagas.tar.gz"
+        run: scp -i "$SSH_KEY_PATH" "$RUNNER_TEMP/api-vagas.tar.gz" "$SSH_USER@$SSH_HOST:/tmp/api-vagas.tar.gz"
 
       - name: Deploy on EC2
         run: |
